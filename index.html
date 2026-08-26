@@ -143,7 +143,7 @@
             cursor: pointer;
         }
 
-        /* 背景画像プレースホルダー（実際の画像に差し替えてください） */
+        /* 背景画像プレースホルダー */
         .service-card.product {
             background-image: url('https://images.unsplash.com/photo-1581428982868-e410dd047a90?auto=format&fit=crop&q=80&w=800');
             background-size: cover;
@@ -181,11 +181,14 @@
             padding: 30px;
         }
 
-        .service-card:hover .service-overlay {
+        /* PCのホバー時 または スマホでスクロール表示(is-active)された時のスタイル */
+        .service-card:hover .service-overlay,
+        .service-card.is-active .service-overlay {
             opacity: 1;
         }
 
-        .service-card:hover .service-title {
+        .service-card:hover .service-title,
+        .service-card.is-active .service-title {
             opacity: 0;
             transform: translateY(20px);
         }
@@ -196,7 +199,8 @@
             transition: all 0.4s ease;
         }
 
-        .service-card:hover .service-list {
+        .service-card:hover .service-list,
+        .service-card.is-active .service-list {
             transform: translateY(0);
         }
 
@@ -262,8 +266,7 @@
             justify-content: center;
             align-items: center;
             color: #888;
-            
-            /* 実際の画像を使用する場合は img タグを使用するか、background-image で設定してください */
+            object-fit: cover;
         }
 
         .work-title {
@@ -338,7 +341,7 @@
                 font-size: 1.8rem;
             }
             nav ul {
-                display: none; /* スマホ時はハンバーガーメニューにするのが理想ですが、今回はシンプルに非表示にします */
+                display: none;
             }
             .services-grid, .works-container {
                 grid-template-columns: 1fr;
@@ -402,17 +405,14 @@
         <div class="works-container">
             <div class="work-item fade-in">
                 <img src="./kagu.png" alt="kagu" class="work-img">
-                <!-- <div class="work-img">Image Placeholder</div> -->
                 <div class="work-title">家具</div>
             </div>
             <div class="work-item fade-in">
                 <img src="./kekkon.png" alt="kekkon" class="work-img">
-                <!-- <div class="work-img">Image Placeholder</div> -->
                 <div class="work-title">結婚証明書</div>
             </div>
             <div class="work-item fade-in">
                 <img src="./tenpo.png" alt="tenpo" class="work-img">
-                <!-- <div class="work-img">Image Placeholder</div> -->
                 <div class="work-title">店舗</div>
             </div>
         </div>
@@ -434,10 +434,9 @@
     </footer>
 
     <script>
-        // スクロール時のフェードインアニメーション
         document.addEventListener("DOMContentLoaded", () => {
+            // 1. 全体フェードイン用アニメーション
             const faders = document.querySelectorAll('.fade-in');
-
             const appearOptions = {
                 threshold: 0.15,
                 rootMargin: "0px 0px -50px 0px"
@@ -445,9 +444,7 @@
 
             const appearOnScroll = new IntersectionObserver(function(entries, observer) {
                 entries.forEach(entry => {
-                    if (!entry.isIntersecting) {
-                        return;
-                    } else {
+                    if (entry.isIntersecting) {
                         entry.target.classList.add('visible');
                         observer.unobserve(entry.target);
                     }
@@ -456,6 +453,31 @@
 
             faders.forEach(fader => {
                 appearOnScroll.observe(fader);
+            });
+
+            // 2. スマホ版：スクロール時のサービスカード詳細表示アニメーション
+            const serviceCards = document.querySelectorAll('.service-card');
+            const cardOptions = {
+                threshold: 0.5 // カードが画面の50%見えたら発火
+            };
+
+            const cardObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    // スマホ画面（768px以下）の場合のみ動作
+                    if (window.innerWidth <= 768) {
+                        if (entry.isIntersecting) {
+                            // 画面内に入ったら表示
+                            entry.target.classList.add('is-active');
+                        } else {
+                            // 画面外に出たら元に戻す（再度スクロールした際にアニメーションさせるため）
+                            entry.target.classList.remove('is-active');
+                        }
+                    }
+                });
+            }, cardOptions);
+
+            serviceCards.forEach(card => {
+                cardObserver.observe(card);
             });
         });
     </script>
